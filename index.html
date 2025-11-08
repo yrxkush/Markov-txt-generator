@@ -5,10 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Markov Chain Text Generator</title>
     <style>
-        /* ==================== */
-        /* CSS Variables & Reset */
-        /* ==================== */
-
+        /* Simple styles */
         :root {
             --bg-primary: #f8f9fa;
             --bg-secondary: #ffffff;
@@ -67,18 +64,10 @@
             transition: background 0.3s ease, color 0.3s ease;
         }
 
-        /* ==================== */
-        /* Container */
-        /* ==================== */
-
         .container {
             max-width: 1100px;
             margin: 0 auto;
         }
-
-        /* ==================== */
-        /* Card System */
-        /* ==================== */
 
         .card {
             background: var(--glass-bg);
@@ -95,10 +84,6 @@
         .card:hover {
             box-shadow: var(--shadow-lg);
         }
-
-        /* ==================== */
-        /* Header */
-        /* ==================== */
 
         header {
             text-align: center;
@@ -144,10 +129,6 @@
             box-shadow: var(--shadow-md);
         }
 
-        /* ==================== */
-        /* Typography */
-        /* ==================== */
-
         label {
             display: block;
             font-weight: 600;
@@ -155,10 +136,6 @@
             color: var(--text-primary);
             font-size: 1.05em;
         }
-
-        /* ==================== */
-        /* Form Elements */
-        /* ==================== */
 
         textarea,
         input[type="number"] {
@@ -185,10 +162,6 @@
             min-height: 180px;
         }
 
-        /* ==================== */
-        /* Checkbox */
-        /* ==================== */
-
         .checkbox-group {
             display: flex;
             align-items: center;
@@ -214,10 +187,6 @@
             font-size: 1em;
             font-weight: 500;
         }
-
-        /* ==================== */
-        /* Buttons */
-        /* ==================== */
 
         .button-group {
             display: flex;
@@ -277,10 +246,6 @@
             box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
         }
 
-        /* ==================== */
-        /* Output Box */
-        /* ==================== */
-
         .output-box {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -301,10 +266,6 @@
             text-align: center;
             padding: 30px;
         }
-
-        /* ==================== */
-        /* Restart Highlighting */
-        /* ==================== */
 
         .restart {
             background: rgba(239, 68, 68, 0.1);
@@ -352,10 +313,6 @@
         .restart-stats strong {
             color: var(--text-primary);
         }
-
-        /* ==================== */
-        /* Statistics Section */
-        /* ==================== */
 
         .stats-section h3 {
             margin-bottom: 20px;
@@ -406,10 +363,6 @@
             font-weight: 600;
         }
 
-        /* ==================== */
-        /* Collapsible Sections */
-        /* ==================== */
-
         .collapsible-header {
             background: var(--bg-secondary);
             padding: 18px 24px;
@@ -456,10 +409,6 @@
             opacity: 0;
             margin-top: 0;
         }
-
-        /* ==================== */
-        /* Table */
-        /* ==================== */
 
         .table-container {
             background: var(--bg-secondary);
@@ -521,10 +470,6 @@
             transition: width 0.3s ease;
         }
 
-        /* ==================== */
-        /* Canvas */
-        /* ==================== */
-
         .diagram-info {
             text-align: center;
             color: var(--text-secondary);
@@ -542,10 +487,6 @@
             height: auto;
         }
 
-        /* ==================== */
-        /* Footer */
-        /* ==================== */
-
         footer {
             text-align: center;
             margin-top: 40px;
@@ -554,10 +495,6 @@
             color: var(--text-muted);
             font-size: 0.95em;
         }
-
-        /* ==================== */
-        /* Scrollbar */
-        /* ==================== */
 
         ::-webkit-scrollbar {
             width: 10px;
@@ -578,10 +515,6 @@
             background: var(--accent-hover);
         }
 
-        /* ==================== */
-        /* Notifications */
-        /* ==================== */
-
         .notification {
             position: fixed;
             top: 30px;
@@ -596,10 +529,6 @@
             z-index: 2000;
             font-weight: 500;
         }
-
-        /* ==================== */
-        /* Responsive */
-        /* ==================== */
 
         @media (max-width: 768px) {
             body {
@@ -632,16 +561,13 @@
             }
         }
 
-        /* ==================== */
-        /* Control Group */
-        /* ==================== */
-
         .control-group {
             margin-bottom: 16px;
         }
     </style>
 </head>
 <body>
+    <!-- Simple Markov Chain Text Generator -->
     <div class="container">
         <!-- Header -->
         <header>
@@ -725,21 +651,17 @@
 
         <!-- Footer -->
         <footer>
-            <p>Built with vanilla JavaScript • Created and maintained by Kush dalal @yrxkush, bhupender, yamini, hansa chouhan and charvi </p>
+            <p>Built with vanilla JavaScript • Created and maintained by Kush dalal @yrxkush, bhupender, yamini, hansa chouhan and charvi</p>
         </footer>
     </div>
 
     <script>
-        // ==========================================
-        // MARKOV CHAIN TEXT GENERATOR
-        // ==========================================
-
-        // Global state
+        // Simple: Globals
         let markovChain = {};
         let allWords = [];
         let transitionCounts = {};
 
-        // DOM Elements
+        // Simple: DOM elements
         const elements = {
             inputText: document.getElementById('inputText'),
             buildChain: document.getElementById('buildChain'),
@@ -759,10 +681,7 @@
             showRestarts: document.getElementById('showRestarts')
         };
 
-        // ==========================================
-        // PREPROCESSING FUNCTIONS
-        // ==========================================
-
+        // Simple: Preprocessing
         function tokenizeText(text) {
             const lowerText = text.toLowerCase();
             const tokens = lowerText
@@ -780,10 +699,7 @@
             return true;
         }
 
-        // ==========================================
-        // MARKOV CHAIN BUILDING
-        // ==========================================
-
+        // Simple: Build chain
         function buildMarkovChain(words) {
             const chain = {};
             const counts = {};
@@ -826,21 +742,12 @@
             return probabilities;
         }
 
-        // ==========================================
-        // TEXT GENERATION WITH RESTART DETECTION
-        // ==========================================
-
-        /**
-         * Get a random key from an object
-         */
+        // Simple: Generate text
         function getRandomKey(obj) {
             const keys = Object.keys(obj);
             return keys[Math.floor(Math.random() * keys.length)];
         }
 
-        /**
-         * Generate text using the Markov chain with restart detection
-         */
         function generateMarkovText(chain, wordCount, showRestarts) {
             if (Object.keys(chain).length === 0) {
                 return { html: "Error: No Markov chain available.", restartCount: 0 };
@@ -850,25 +757,20 @@
             let outputHTML = '';
             let restartCount = 0;
             
-            // Add first word (always a start)
             if (showRestarts) {
                 outputHTML += `<span class="restart">${escapeHtml(currentWord)}</span> `;
             } else {
                 outputHTML += `${escapeHtml(currentWord)} `;
             }
             
-            // Generate subsequent words
             for (let i = 1; i < wordCount; i++) {
-                // Check if current word has no transitions (end of chain)
                 if (!chain[currentWord] || chain[currentWord].length === 0) {
-                    // This is a restart point
                     restartCount++;
                     
                     if (showRestarts) {
                         outputHTML += '<span class="restart-tag">[NEW START]</span> ';
                     }
                     
-                    // Pick a new random starting word
                     currentWord = getRandomKey(chain);
                     
                     if (showRestarts) {
@@ -877,7 +779,6 @@
                         outputHTML += `${escapeHtml(currentWord)} `;
                     }
                 } else {
-                    // Randomly select next word from available transitions
                     const possibleNext = chain[currentWord];
                     currentWord = possibleNext[Math.floor(Math.random() * possibleNext.length)];
                     outputHTML += `${escapeHtml(currentWord)} `;
@@ -887,10 +788,7 @@
             return { html: outputHTML.trim(), restartCount: restartCount };
         }
 
-        // ==========================================
-        // UI RENDERING FUNCTIONS
-        // ==========================================
-
+        // Simple: UI rendering
         function renderTransitionTable(probabilities) {
             if (Object.keys(probabilities).length === 0) {
                 elements.transitionTable.innerHTML = '<p class="placeholder">Build a Markov chain to see the transition table...</p>';
@@ -1015,7 +913,6 @@
             const textColor = styles.getPropertyValue('--text-primary').trim();
             const successColor = styles.getPropertyValue('--accent-success').trim();
             
-            // Draw edges
             ctx.strokeStyle = accentColor;
             ctx.lineWidth = 1.5;
             ctx.globalAlpha = 0.4;
@@ -1057,7 +954,6 @@
                 });
             });
             
-            // Draw nodes
             ctx.globalAlpha = 1;
             words.forEach(word => {
                 const pos = nodePositions[word];
@@ -1080,10 +976,7 @@
             });
         }
 
-        // ==========================================
-        // EVENT HANDLERS
-        // ==========================================
-
+        // Simple: Events
         elements.buildChain.addEventListener('click', () => {
             const text = elements.inputText.value;
             
@@ -1124,7 +1017,6 @@
             
             let outputHTML = `<p>${result.html}</p>`;
             
-            // Add restart statistics if restarts are shown
             if (showRestarts && result.restartCount > 0) {
                 outputHTML += `
                     <div class="restart-stats">
@@ -1180,10 +1072,7 @@
             elements.diagramContent.classList.toggle('collapsed');
         });
 
-        // ==========================================
-        // UTILITY FUNCTIONS
-        // ==========================================
-
+        // Simple: Utilities
         function escapeHtml(text) {
             const div = document.createElement('div');
             div.textContent = text;
