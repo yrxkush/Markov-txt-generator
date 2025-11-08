@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markov Chain Text Generator</title>
+    <style>
+        /* ==================== */
+        /* CSS Variables & Reset */
+        /* ==================== */
+
+        :root {
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --text-primary: #1a1a1a;
+            --text-secondary: #4a5568;
+            --text-muted: #718096;
+            --accent-primary: #3b82f6;
+            --accent-hover: #2563eb;
+            --accent-success: #10b981;
+            --accent-success-hover: #059669;
+            --accent-warning: #f59e0b;
+            --accent-danger: #ef4444;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --radius: 30px;
+            --radius-md: 20px;
+            --radius-sm: 15px;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-primary: #60a5fa;
+            --accent-hover: #3b82f6;
+            --accent-success: #34d399;
+            --accent-success-hover: #10b981;
+            --accent-warning: #fbbf24;
+            --accent-danger: #f87171;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 40px 20px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* ==================== */
+        /* Container */
+        /* ==================== */
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* ==================== */
+        /* Card System */
+        /* ==================== */
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: var(--radius);
+            border: 1px solid var(--glass-border);
+            padding: 35px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow-md);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* ==================== */
+        /* Header */
+        /* ==================== */
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1em;
+            font-weight: 400;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.4em;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ==================== */
+        /* Typography */
+        /* ==================== */
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-size: 1.05em;
+        }
+
+        /* ==================== */
+        /* Form Elements */
+        /* ==================== */
+
+        textarea,
+        input[type="number"] {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 1em;
+            color: var(--text-primary);
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            resize: vertical;
+        }
+
+        textarea:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        textarea {
+            min-height: 180px;
+        }
+
+        /* ==================== */
+        /* Checkbox */
+        /* ==================== */
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 18px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent-primary);
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            user-select: none;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        /* ==================== */
+        /* Buttons */
+        /* ==================== */
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            font-size: 1em;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+            flex: 1;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--bg-primary);
+        }
+
+        .btn-success {
+            background: var(--accent-success);
+            color: white;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: var(--accent-success-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+        }
+
+        /* ==================== */
+        /* Output Box */
+        /* ==================== */
+
+        .output-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            min-height: 150px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .placeholder {
+            color: var(--text-muted);
+            font-style: italic;
+            text-align: center;
+            padding: 30px;
+        }
+
+        /* ==================== */
+        /* Restart Highlighting */
+        /* ==================== */
+
+        .restart {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--accent-danger);
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 0 2px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        [data-theme="dark"] .restart {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--accent-danger);
+            border-color: rgba(248, 113, 113, 0.3);
+        }
+
+        .restart-tag {
+            background: var(--accent-warning);
+            color: white;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin: 0 6px;
+            font-size: 0.85em;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        }
+
+        [data-theme="dark"] .restart-tag {
+            background: var(--accent-warning);
+            box-shadow: 0 2px 8px rgba(251, 191, 36, 0.4);
+        }
+
+        .restart-stats {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.95em;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .restart-stats strong {
+            color: var(--text-primary);
+        }
+
+        /* ==================== */
+        /* Statistics Section */
+        /* ==================== */
+
+        .stats-section h3 {
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .top-transitions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .transition-item {
+            background: var(--bg-secondary);
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .transition-item:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .transition-words {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .transition-arrow {
+            color: var(--accent-primary);
+            margin: 0 10px;
+            font-size: 1.2em;
+        }
+
+        .transition-count {
+            background: var(--accent-primary);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        /* ==================== */
+        /* Collapsible Sections */
+        /* ==================== */
+
+        .collapsible-header {
+            background: var(--bg-secondary);
+            padding: 18px 24px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            user-select: none;
+            border: 1px solid var(--border-color);
+        }
+
+        .collapsible-header:hover {
+            background: var(--bg-primary);
+        }
+
+        .collapsible-header h3 {
+            margin: 0;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .toggle-icon {
+            font-size: 1.2em;
+            transition: transform 0.2s ease;
+            color: var(--text-muted);
+        }
+
+        .collapsible-header.collapsed .toggle-icon {
+            transform: rotate(-90deg);
+        }
+
+        .collapsible-content {
+            max-height: 2000px;
+            overflow: hidden;
+            transition: max-height 0.3s ease, opacity 0.3s ease;
+            opacity: 1;
+            margin-top: 16px;
+        }
+
+        .collapsible-content.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-top: 0;
+        }
+
+        /* ==================== */
+        /* Table */
+        /* ==================== */
+
+        .table-container {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.95em;
+        }
+
+        thead {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        thead tr th:first-child {
+            border-top-left-radius: var(--radius-sm);
+        }
+
+        thead tr th:last-child {
+            border-top-right-radius: var(--radius-sm);
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+        }
+
+        th {
+            font-weight: 600;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:hover {
+            background: var(--bg-primary);
+        }
+
+        .probability-bar {
+            background: var(--border-color);
+            height: 6px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .probability-fill {
+            background: var(--accent-success);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        /* ==================== */
+        /* Canvas */
+        /* ==================== */
+
+        .diagram-info {
+            text-align: center;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 0.95em;
+        }
+
+        #stateCanvas {
+            display: block;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* ==================== */
+        /* Footer */
+        /* ==================== */
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.95em;
+        }
+
+        /* ==================== */
+        /* Scrollbar */
+        /* ==================== */
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-hover);
+        }
+
+        /* ==================== */
+        /* Notifications */
+        /* ==================== */
+
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            color: var(--text-primary);
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--glass-border);
+            z-index: 2000;
+            font-weight: 500;
+        }
+
+        /* ==================== */
+        /* Responsive */
+        /* ==================== */
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px 15px;
+            }
+
+            .card {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 2.2em;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .theme-toggle {
+                top: 20px;
+                right: 20px;
+                width: 45px;
+                height: 45px;
+                font-size: 1.2em;
+            }
+
+            #stateCanvas {
+                width: 100% !important;
+                height: auto !important;
+            }
+        }
+
+        /* ==================== */
+        /* Control Group */
+        /* ==================== */
+
+        .control-group {
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>🔗 Markov Chain Text Generator</h1>
+            <p class="subtitle">Build statistical models and generate intelligent text patterns</p>
+        </header>
+
+        <button class="theme-toggle" id="darkModeToggle" aria-label="Toggle theme">🌙</button>
+
+        <!-- Input Section -->
+        <div class="card">
+            <label for="inputText">Enter Your Text</label>
+            <textarea 
+                id="inputText" 
+                placeholder="Paste or type your text here. The more text you provide, the better the model will be..."
+            ></textarea>
+            
+            <div class="button-group">
+                <button id="buildChain" class="btn btn-primary">🔨 Build Markov Chain</button>
+                <button id="clearAll" class="btn btn-secondary">🗑️ Clear All</button>
+            </div>
+        </div>
+
+        <!-- Generation Controls -->
+        <div class="card">
+            <div class="control-group">
+                <label for="wordCount">Number of Words to Generate</label>
+                <input type="number" id="wordCount" value="30" min="5" max="500">
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="showRestarts" checked>
+                <label for="showRestarts">Show restart markers when chain ends</label>
+            </div>
+            
+            <button id="generateText" class="btn btn-success" disabled>✨ Generate Text</button>
+        </div>
+
+        <!-- Output Section -->
+        <div class="card">
+            <label>Generated Output</label>
+            <div id="generatedOutput" class="output-box">
+                <p class="placeholder">Generated text will appear here...</p>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="card" id="statsSection" style="display: none;">
+            <section class="stats-section">
+                <h3>📊 Top 5 Most Frequent Transitions</h3>
+                <div id="topTransitions" class="top-transitions"></div>
+            </section>
+        </div>
+
+        <!-- Transition Table Section -->
+        <div class="card">
+            <div class="collapsible-header" id="tableHeader">
+                <h3>📋 Transition Table</h3>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div id="tableContent" class="collapsible-content">
+                <div id="transitionTable" class="table-container">
+                    <p class="placeholder">Build a Markov chain to see the transition table...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Diagram Section -->
+        <div class="card">
+            <div class="collapsible-header" id="diagramHeader">
+                <h3>🎯 State Diagram</h3>
+                <span class="toggle-icon">▼</span>
+            </div>
+            <div id="diagramContent" class="collapsible-content">
+                <div class="diagram-info">
+                    <p>Showing first 20 unique words and their transitions</p>
+                </div>
+                <canvas id="stateCanvas" width="800" height="600"></canvas>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Built with vanilla JavaScript • Created and maintained by Kush dalal @yrxkush and team</p>
+        </footer>
+    </div>
+
+    <script>
+        // ==========================================
+        // MARKOV CHAIN TEXT GENERATOR
+        // ==========================================
+
+        // Global state
+        let markovChain = {};
+        let allWords = [];
+        let transitionCounts = {};
+
+        // DOM Elements
+        const elements = {
+            inputText: document.getElementById('inputText'),
+            buildChain: document.getElementById('buildChain'),
+            generateText: document.getElementById('generateText'),
+            clearAll: document.getElementById('clearAll'),
+            wordCount: document.getElementById('wordCount'),
+            generatedOutput: document.getElementById('generatedOutput'),
+            transitionTable: document.getElementById('transitionTable'),
+            stateCanvas: document.getElementById('stateCanvas'),
+            darkModeToggle: document.getElementById('darkModeToggle'),
+            tableHeader: document.getElementById('tableHeader'),
+            diagramHeader: document.getElementById('diagramHeader'),
+            tableContent: document.getElementById('tableContent'),
+            diagramContent: document.getElementById('diagramContent'),
+            statsSection: document.getElementById('statsSection'),
+            topTransitions: document.getElementById('topTransitions'),
+            showRestarts: document.getElementById('showRestarts')
+        };
+
+        // ==========================================
+        // PREPROCESSING FUNCTIONS
+        // ==========================================
+
+        function tokenizeText(text) {
+            const lowerText = text.toLowerCase();
+            const tokens = lowerText
+                .replace(/[.,!?;:()\[\]{}"'—–-]/g, ' ')
+                .split(/\s+/)
+                .filter(token => token.length > 0);
+            return tokens;
+        }
+
+        function validateInput(text) {
+            if (!text || text.trim().length === 0) {
+                alert('⚠️ Please enter some text before building the Markov chain!');
+                return false;
+            }
+            return true;
+        }
+
+        // ==========================================
+        // MARKOV CHAIN BUILDING
+        // ==========================================
+
+        function buildMarkovChain(words) {
+            const chain = {};
+            const counts = {};
+            
+            for (let i = 0; i < words.length - 1; i++) {
+                const currentWord = words[i];
+                const nextWord = words[i + 1];
+                
+                if (!chain[currentWord]) {
+                    chain[currentWord] = [];
+                    counts[currentWord] = {};
+                }
+                
+                chain[currentWord].push(nextWord);
+                
+                if (!counts[currentWord][nextWord]) {
+                    counts[currentWord][nextWord] = 0;
+                }
+                counts[currentWord][nextWord]++;
+            }
+            
+            return { chain, counts };
+        }
+
+        function calculateProbabilities(counts) {
+            const probabilities = {};
+            
+            for (const word in counts) {
+                probabilities[word] = {};
+                const total = Object.values(counts[word]).reduce((sum, count) => sum + count, 0);
+                
+                for (const nextWord in counts[word]) {
+                    probabilities[word][nextWord] = {
+                        count: counts[word][nextWord],
+                        probability: (counts[word][nextWord] / total).toFixed(3)
+                    };
+                }
+            }
+            
+            return probabilities;
+        }
+
+        // ==========================================
+        // TEXT GENERATION WITH RESTART DETECTION
+        // ==========================================
+
+        /**
+         * Get a random key from an object
+         */
+        function getRandomKey(obj) {
+            const keys = Object.keys(obj);
+            return keys[Math.floor(Math.random() * keys.length)];
+        }
+
+        /**
+         * Generate text using the Markov chain with restart detection
+         */
+        function generateMarkovText(chain, wordCount, showRestarts) {
+            if (Object.keys(chain).length === 0) {
+                return { html: "Error: No Markov chain available.", restartCount: 0 };
+            }
+            
+            let currentWord = getRandomKey(chain);
+            let outputHTML = '';
+            let restartCount = 0;
+            
+            // Add first word (always a start)
+            if (showRestarts) {
+                outputHTML += `<span class="restart">${escapeHtml(currentWord)}</span> `;
+            } else {
+                outputHTML += `${escapeHtml(currentWord)} `;
+            }
+            
+            // Generate subsequent words
+            for (let i = 1; i < wordCount; i++) {
+                // Check if current word has no transitions (end of chain)
+                if (!chain[currentWord] || chain[currentWord].length === 0) {
+                    // This is a restart point
+                    restartCount++;
+                    
+                    if (showRestarts) {
+                        outputHTML += '<span class="restart-tag">[NEW START]</span> ';
+                    }
+                    
+                    // Pick a new random starting word
+                    currentWord = getRandomKey(chain);
+                    
+                    if (showRestarts) {
+                        outputHTML += `<span class="restart">${escapeHtml(currentWord)}</span> `;
+                    } else {
+                        outputHTML += `${escapeHtml(currentWord)} `;
+                    }
+                } else {
+                    // Randomly select next word from available transitions
+                    const possibleNext = chain[currentWord];
+                    currentWord = possibleNext[Math.floor(Math.random() * possibleNext.length)];
+                    outputHTML += `${escapeHtml(currentWord)} `;
+                }
+            }
+            
+            return { html: outputHTML.trim(), restartCount: restartCount };
+        }
+
+        // ==========================================
+        // UI RENDERING FUNCTIONS
+        // ==========================================
+
+        function renderTransitionTable(probabilities) {
+            if (Object.keys(probabilities).length === 0) {
+                elements.transitionTable.innerHTML = '<p class="placeholder">Build a Markov chain to see the transition table...</p>';
+                return;
+            }
+            
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Current Word</th>
+                            <th>Next Word</th>
+                            <th>Count</th>
+                            <th>Probability</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            const sortedWords = Object.keys(probabilities).sort();
+            
+            for (const word of sortedWords) {
+                const transitions = probabilities[word];
+                const sortedTransitions = Object.entries(transitions)
+                    .sort((a, b) => b[1].count - a[1].count);
+                
+                for (const [nextWord, data] of sortedTransitions) {
+                    const percentage = (data.probability * 100).toFixed(1);
+                    tableHTML += `
+                        <tr>
+                            <td><strong>${escapeHtml(word)}</strong></td>
+                            <td>${escapeHtml(nextWord)}</td>
+                            <td>${data.count}</td>
+                            <td>
+                                ${data.probability} (${percentage}%)
+                                <div class="probability-bar">
+                                    <div class="probability-fill" style="width: ${percentage}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+            
+            tableHTML += `</tbody></table>`;
+            elements.transitionTable.innerHTML = tableHTML;
+        }
+
+        function renderTopTransitions(counts) {
+            const allTransitions = [];
+            
+            for (const word in counts) {
+                for (const nextWord in counts[word]) {
+                    allTransitions.push({
+                        from: word,
+                        to: nextWord,
+                        count: counts[word][nextWord]
+                    });
+                }
+            }
+            
+            allTransitions.sort((a, b) => b.count - a.count);
+            const top5 = allTransitions.slice(0, 5);
+            
+            if (top5.length === 0) {
+                elements.statsSection.style.display = 'none';
+                return;
+            }
+            
+            elements.statsSection.style.display = 'block';
+            
+            let html = '';
+            top5.forEach((transition) => {
+                html += `
+                    <div class="transition-item">
+                        <div>
+                            <span class="transition-words">${escapeHtml(transition.from)}</span>
+                            <span class="transition-arrow">→</span>
+                            <span class="transition-words">${escapeHtml(transition.to)}</span>
+                        </div>
+                        <span class="transition-count">${transition.count}</span>
+                    </div>
+                `;
+            });
+            
+            elements.topTransitions.innerHTML = html;
+        }
+
+        function drawStateDiagram(chain) {
+            const canvas = elements.stateCanvas;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const words = Object.keys(chain).slice(0, 20);
+            
+            if (words.length === 0) {
+                ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--text-muted');
+                ctx.font = '16px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Build a Markov chain to see the diagram', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) / 2 - 60;
+            
+            const nodePositions = {};
+            const angleStep = (2 * Math.PI) / words.length;
+            
+            words.forEach((word, index) => {
+                const angle = index * angleStep - Math.PI / 2;
+                nodePositions[word] = {
+                    x: centerX + radius * Math.cos(angle),
+                    y: centerY + radius * Math.sin(angle)
+                };
+            });
+            
+            const styles = getComputedStyle(document.body);
+            const accentColor = styles.getPropertyValue('--accent-primary').trim();
+            const textColor = styles.getPropertyValue('--text-primary').trim();
+            const successColor = styles.getPropertyValue('--accent-success').trim();
+            
+            // Draw edges
+            ctx.strokeStyle = accentColor;
+            ctx.lineWidth = 1.5;
+            ctx.globalAlpha = 0.4;
+            
+            words.forEach(word => {
+                const from = nodePositions[word];
+                if (!chain[word]) return;
+                
+                const uniqueNext = [...new Set(chain[word])];
+                
+                uniqueNext.forEach(nextWord => {
+                    if (nodePositions[nextWord]) {
+                        const to = nodePositions[nextWord];
+                        
+                        const controlX = (from.x + to.x) / 2 + (from.y - to.y) * 0.1;
+                        const controlY = (from.y + to.y) / 2 + (to.x - from.x) * 0.1;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(from.x, from.y);
+                        ctx.quadraticCurveTo(controlX, controlY, to.x, to.y);
+                        ctx.stroke();
+                        
+                        const angle = Math.atan2(to.y - controlY, to.x - controlX);
+                        const arrowSize = 8;
+                        ctx.beginPath();
+                        ctx.moveTo(to.x, to.y);
+                        ctx.lineTo(
+                            to.x - arrowSize * Math.cos(angle - Math.PI / 6),
+                            to.y - arrowSize * Math.sin(angle - Math.PI / 6)
+                        );
+                        ctx.lineTo(
+                            to.x - arrowSize * Math.cos(angle + Math.PI / 6),
+                            to.y - arrowSize * Math.sin(angle + Math.PI / 6)
+                        );
+                        ctx.closePath();
+                        ctx.fillStyle = accentColor;
+                        ctx.fill();
+                    }
+                });
+            });
+            
+            // Draw nodes
+            ctx.globalAlpha = 1;
+            words.forEach(word => {
+                const pos = nodePositions[word];
+                
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 25, 0, 2 * Math.PI);
+                ctx.fillStyle = successColor;
+                ctx.fill();
+                ctx.strokeStyle = textColor;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 11px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const displayWord = word.length > 6 ? word.substring(0, 5) + '…' : word;
+                ctx.fillText(displayWord, pos.x, pos.y);
+            });
+        }
+
+        // ==========================================
+        // EVENT HANDLERS
+        // ==========================================
+
+        elements.buildChain.addEventListener('click', () => {
+            const text = elements.inputText.value;
+            
+            if (!validateInput(text)) return;
+            
+            allWords = tokenizeText(text);
+            
+            if (allWords.length < 2) {
+                alert('⚠️ Not enough data to build a Markov model. Please enter more text.');
+                return;
+            }
+            
+            const { chain, counts } = buildMarkovChain(allWords);
+            markovChain = chain;
+            transitionCounts = counts;
+            
+            const probabilities = calculateProbabilities(counts);
+            
+            renderTransitionTable(probabilities);
+            renderTopTransitions(counts);
+            drawStateDiagram(chain);
+            
+            elements.generateText.disabled = false;
+            
+            showSuccessMessage(`✅ Markov chain built successfully! Found ${Object.keys(chain).length} unique states.`);
+        });
+
+        elements.generateText.addEventListener('click', () => {
+            const wordCount = parseInt(elements.wordCount.value) || 30;
+            
+            if (wordCount < 5 || wordCount > 500) {
+                alert('⚠️ Please enter a word count between 5 and 500.');
+                return;
+            }
+            
+            const showRestarts = elements.showRestarts.checked;
+            const result = generateMarkovText(markovChain, wordCount, showRestarts);
+            
+            let outputHTML = `<p>${result.html}</p>`;
+            
+            // Add restart statistics if restarts are shown
+            if (showRestarts && result.restartCount > 0) {
+                outputHTML += `
+                    <div class="restart-stats">
+                        <strong>Chain Statistics:</strong> ${result.restartCount} restart${result.restartCount !== 1 ? 's' : ''} occurred during generation 
+                        (chain ended and restarted with a new random word).
+                    </div>
+                `;
+            }
+            
+            elements.generatedOutput.innerHTML = outputHTML;
+            elements.generatedOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+
+        elements.clearAll.addEventListener('click', () => {
+            if (confirm('🗑️ Are you sure you want to clear all data?')) {
+                markovChain = {};
+                allWords = [];
+                transitionCounts = {};
+                
+                elements.inputText.value = '';
+                elements.generatedOutput.innerHTML = '<p class="placeholder">Generated text will appear here...</p>';
+                elements.transitionTable.innerHTML = '<p class="placeholder">Build a Markov chain to see the transition table...</p>';
+                elements.statsSection.style.display = 'none';
+                
+                const ctx = elements.stateCanvas.getContext('2d');
+                ctx.clearRect(0, 0, elements.stateCanvas.width, elements.stateCanvas.height);
+                
+                elements.generateText.disabled = true;
+            }
+        });
+
+        elements.darkModeToggle.addEventListener('click', () => {
+            const currentTheme = document.body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.body.setAttribute('data-theme', newTheme);
+            elements.darkModeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+            
+            localStorage.setItem('theme', newTheme);
+            
+            if (Object.keys(markovChain).length > 0) {
+                drawStateDiagram(markovChain);
+            }
+        });
+
+        elements.tableHeader.addEventListener('click', () => {
+            elements.tableHeader.classList.toggle('collapsed');
+            elements.tableContent.classList.toggle('collapsed');
+        });
+
+        elements.diagramHeader.addEventListener('click', () => {
+            elements.diagramHeader.classList.toggle('collapsed');
+            elements.diagramContent.classList.toggle('collapsed');
+        });
+
+        // ==========================================
+        // UTILITY FUNCTIONS
+        // ==========================================
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showSuccessMessage(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'notification';
+            messageDiv.textContent = message;
+            
+            document.body.appendChild(messageDiv);
+            
+            setTimeout(() => messageDiv.remove(), 3000);
+        }
+
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.body.setAttribute('data-theme', savedTheme);
+            elements.darkModeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        function init() {
+            initializeTheme();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
