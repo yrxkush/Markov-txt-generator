@@ -2,7 +2,7 @@
 
 This is a small web project that generates text using a Markov chain.  
 It is built with HTML, CSS, and JavaScript and runs fully in the browser.
-https://yrxkush.github.io/Markov-txt-generator/
+## https://yrxkush.github.io/Markov-txt-generator/
 
 ## What this project does
 - Takes any input text and learns word-to-word transitions.
