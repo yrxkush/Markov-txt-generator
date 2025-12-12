@@ -23,7 +23,8 @@ It is built with HTML, CSS, and JavaScript and runs fully in the browser.
 ## Files
   - `index.html` - HTML structure 
   - `style.css` - CSS styles
-  - `script.js` - JavaScript functionality 
+  - `script.js` - JavaScript functionality
+  - `Changelog.md` - Display the update logs
 
 
 ## Notes
