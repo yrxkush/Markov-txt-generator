@@ -2,7 +2,7 @@
 
 ## Latest Update - December 12, 2025
 
-### 🎨 Major UI/UX Improvements
+###  Major UI/UX Improvements
 
 #### Dark Mode as Default
 - Removed light/dark mode toggle
@@ -13,7 +13,7 @@
   - `style.css` - All CSS styles
   - `script.js` - All JavaScript functionality 
 
-### ✨ New Features
+###  New Features
 
 #### Multiple Paragraph Generation
 - **New toggle option**: "Generate multiple paragraphs (disable random restarts)"
@@ -25,13 +25,13 @@
   - Natural chain termination when no more words available
 
 #### Sample Text Loader
-- **New "📄 Load Sample Text" button**
+- **New " Load Sample Text" button**
 - Pre-loaded sample text about daily city life
 - One-click demo experience
 
 ---
 
-### 🎯 Interactive State Diagram
+###  Interactive State Diagram
 
 #### Visual Enhancements
 - **Color-coded nodes**: Hot (yellow) to cold (green) based on connection count
