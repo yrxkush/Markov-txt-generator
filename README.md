@@ -30,6 +30,10 @@ It is built with HTML, CSS, and JavaScript and runs fully in the browser.
 ## Notes
 This project is made for learning, experimenting, and understanding how Markov chains generate text.  
 It works entirely on the frontend and requires no installation.
+## Development Approach
+This project was designed and structured by me, including the problem breakdown, feature set, and UI behavior.
+I used AI-assisted coding tools to speed up implementation, debug logic, and iterate on ideas.
+All architectural decisions, data flow, and feature validation were done by me.
 
 ## Credits
 Made and managed by Kush and team.
